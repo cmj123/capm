@@ -36,6 +36,16 @@ class CAPM:
         # remove the NaN values
         self.data = self.data[1:]
 
+    def calculate_beta(self):
+        # covariance matrix: the diagonal items are the variances
+        # off diagonals are the covariances
+        # the matrix is symmetric: cov[0,1] = cov[1,0]
+        covariance_matrix = np.cov(self.data["s_returns"], self.data["m_returns"])
+        # calculating beta accroding to the formula
+        beta = covariance_matrix[0,1] / covariance_matrix[1,1]
+        print(f'beta')
+
 if __name__ == '__main__':
     capm = CAPM(['IBM', '^GSPC'], '2016-01-01', '2017-01-01')
     capm.initialize()
+    capm.calculate_beta()
