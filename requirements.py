@@ -3,3 +3,10 @@ pandas
 yfinance
 matplotlib
 scipy
+datetime
+streamlit
+plotly
+Pillow
+statsmodels
+matplotlib
+streamlit_shadcn_ui
