@@ -1,10 +1,6 @@
 import datetime as dt
-import pandas as pd
 import streamlit as st
-import plotly.express as px
 import plotly.graph_objs as go
-import matplotlib.pyplot as plt
-import streamlit_shadcn_ui as ui
 from PIL import Image
 import time
 from capm import CAPM
