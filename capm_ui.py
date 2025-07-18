@@ -56,7 +56,7 @@ def main():
         "Start Date",
         max_value=dt.date.today() - dt.timedelta(days=1),
         min_value=dt.date.today() - dt.timedelta(days=3650),
-        value=dt.date.today() - dt.timedelta(days=3650)
+        value=dt.date.today() - dt.timedelta(days=365*5)
     )
 
     end_date = end.date_input(
@@ -71,81 +71,115 @@ def main():
     if calc:
         try:
             with st.spinner("CAPM analysis in progess"):
-                time.sleep(2)
                 capm = CAPM([stock, benchmark], start_date, end_date)
                 capm.initialize()
                 capm.regression()
 
+                with st.container(border=True):
+                    tab1, tab2, tab3, tab4 = st.tabs(
+                        [
+                            "CAPM",
+                            "Returns",
+                            "Summary",
+                            "Dataset",
+                            
+                        ]
+                    )
+                    with tab3:
+                        st.markdown("#### Summary")
+                        st.markdown(f"**Expected Return**: {capm.expected_return*100:.2f}%")
+                        st.markdown(f"**Beta**: {capm.beta:.4f}")
+                        st.markdown(f"**Market Return**: {capm.market_return*100:.2f}%")
+                        st.markdown(f"**Market Risk Premium**: {capm.market_risk_premium*100:.2f}%")
+                        st.markdown(f"**Risk Free Rate**: {1.00:.2f}%")
+                        
+
+                    with tab1:
+                        st.markdown("#### CAPM GRAPH")
+                                    
+                        # # Plot figure
+                        # fig, axis = plt.subplots(1, figsize=(10,6))
+                        # axis.scatter(capm.data["m_returns"], capm.data['s_returns'], label="Data Points")
+                        # axis.plot(capm.data["m_returns"], capm.beta*capm.data["m_returns"] + capm.alpha, color='red', label="CAPM Line")
+                        # plt.title('Capital Asset Pricing Model, finding alpha and beta')
+                        # plt.xlabel('Market return $R_m$')
+                        # plt.ylabel('Stock return $R_a$')
+                        # # plt.text(0.8, 0.15, er_beta_str , horizontalalignment='right', verticalalignment='top', transform=axis.transAxes)
+                        # plt.legend()
+                        # plt.grid(True)
+                        # # plt.show()
+                        # st.pyplot(fig)
+
+                        ## Plot Grpah
+                        capm.data["m_returns"] = capm.data["m_returns"]*100
+                        capm.data["s_returns"] = capm.data["s_returns"]*100
+                        capm.data["expected_return"]=capm.beta*capm.data["m_returns"] + capm.alpha
+                        fig3 = go.Figure()
+                        fig3.add_trace(
+                            go.Scatter(
+                                x=capm.data["m_returns"], 
+                                y=capm.data["s_returns"], 
+                                mode='markers', 
+                                name="Returns",
+                                line=dict(color='blue')
+                            ),
+                        )
+                        fig3.add_trace(
+                            go.Scatter(
+                                x=capm.data["m_returns"], 
+                                y=capm.data["expected_return"], 
+                                mode="lines+markers",
+                                name="CAPM Line",
+                                line=dict(color='red')
+                            )
+                        )
+
+                        fig3.update_xaxes(title_text = "Market Return (%)")
+                        fig3.update_yaxes(title_text = "Expected Return (%)")
+                        fig3.update_layout(title = dict(text="Capital Asset Pricing Model"),legend_title_text = "Result")
+                    
+                        st.plotly_chart(fig3, use_container_width=True)
+
+                    with tab4:
+                        st.markdown("#### Dataset")
+                        st.dataframe(capm.data)
+
+                    with tab2:
+                        st.markdown('#### Cumulative Returns')
+
+                        fig = go.Figure()
+                        fig.add_trace(
+                            go.Scatter(
+                                x=capm.data.index, 
+                                y=capm.data['s_returns_cum'], 
+                                mode='lines', 
+                                name="Stock",
+                                line=dict(color='blue')
+                            )
+                        )
+                        fig.add_trace(
+                            go.Scatter(
+                                x=capm.data.index, 
+                                y=capm.data['m_returns_cum'], 
+                                mode='lines', 
+                                name="Benchmark",
+                                line=dict(color='Red')
+                            )
+                        )
+
+                        fig.update_xaxes(title_text = "Time")
+                        fig.update_yaxes(title_text = "Cumulative Returns")
+                        fig.update_layout(title = dict(text="Cumulative Returns"),legend_title_text = "Cumulative Returns")
+
+                        st.plotly_chart(fig, use_container_width=True)
+                        
+                        
+
+
         except:
             st.error("Wrong Input")
         
-        with st.container(border=True):
-            tab1, tab2, tab3 = st.tabs(
-                [
-                    "CAPM",
-                    "Summary",
-                    "Dataset"
-                ]
-            )
-            with tab2:
-                st.markdown("#### Summary")
-                st.markdown(f"**Expected Return**: {capm.expected_return*100:.2f}%")
-                st.markdown(f"**Beta**: {capm.beta:.4f}")
-                st.markdown(f"**Market Return**: {capm.market_return*100:.2f}%")
-                st.markdown(f"**Market Risk Premium**: {capm.market_risk_premium*100:.2f}%")
-                st.markdown(f"**Risk Free Rate**: {1.00:.2f}%")
-                
-
-            with tab1:
-                st.markdown("#### CAPM GRAPH")
-                            
-                # # Plot figure
-                # fig, axis = plt.subplots(1, figsize=(10,6))
-                # axis.scatter(capm.data["m_returns"], capm.data['s_returns'], label="Data Points")
-                # axis.plot(capm.data["m_returns"], capm.beta*capm.data["m_returns"] + capm.alpha, color='red', label="CAPM Line")
-                # plt.title('Capital Asset Pricing Model, finding alpha and beta')
-                # plt.xlabel('Market return $R_m$')
-                # plt.ylabel('Stock return $R_a$')
-                # # plt.text(0.8, 0.15, er_beta_str , horizontalalignment='right', verticalalignment='top', transform=axis.transAxes)
-                # plt.legend()
-                # plt.grid(True)
-                # # plt.show()
-                # st.pyplot(fig)
-
-                ## Plot Grpah
-                capm.data["m_returns"] = capm.data["m_returns"]*100
-                capm.data["s_returns"] = capm.data["s_returns"]*100
-                capm.data["expected_return"]=capm.beta*capm.data["m_returns"] + capm.alpha
-                fig3 = go.Figure()
-                fig3.add_trace(
-                    go.Scatter(
-                        x=capm.data["m_returns"], 
-                        y=capm.data["s_returns"], 
-                        mode='markers', 
-                        name="Returns",
-                        line=dict(color='blue')
-                    ),
-                )
-                fig3.add_trace(
-                    go.Scatter(
-                        x=capm.data["m_returns"], 
-                        y=capm.data["expected_return"], 
-                        mode="lines+markers",
-                        name="CAPM Line",
-                        line=dict(color='red')
-                    )
-                )
-
-                fig3.update_xaxes(title_text = "Market Return (%)")
-                fig3.update_yaxes(title_text = "Expected Return (%)")
-                fig3.update_layout(title = dict(text="Capital Asset Pricing Model"),legend_title_text = "Result")
-              
-                st.plotly_chart(fig3, use_container_width=True)
-
-            with tab3:
-                st.markdown("#### Dataset")
-                st.dataframe(capm.data)
-
+        
 
 if __name__ == "__main__":
     main()

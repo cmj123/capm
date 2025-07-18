@@ -40,6 +40,10 @@ class CAPM:
         # remove the NaN values
         self.data = self.data.dropna()
 
+        # Cumulative Returns
+        self.data['s_returns_cum'] = (1 + self.data['s_returns']).cumprod() - 1
+        self.data['m_returns_cum'] = (1 + self.data['m_returns']).cumprod() - 1
+
         return None
 
     def calculate_beta(self):
